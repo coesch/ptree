@@ -40,3 +40,6 @@ coverage.xml
 # others
 .DS_Store
 .idea
+
+# compile time
+config.pxi
