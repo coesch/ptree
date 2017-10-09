@@ -270,6 +270,8 @@ def get_benchmark_keijzer(rand, n_degrees):
         train_y = target_keijzer13(train_x).transpose()
         test_x = np.meshgrid([np.arange(-3, 3, 0.01), np.arange(-3, 3, 0.01)])
         test_y = target_keijzer13(test_x).transpose()
+    else:
+        print('Degree %d not defined for this problem.' %n_degrees)
     return train_x, train_y, test_x, test_y
 
 
@@ -363,3 +365,21 @@ def get_benchmark_pagie1(rand, n_degrees):
             cntr += 1
     train_y = target_pagie1(train_x).transpose()
     return train_x, train_y, train_x, train_y
+
+def get_benchmark_constant(rand, n_degrees):
+    train_x = np.array([(rand.random() * 2) for i in range(20)], ndmin=2).transpose() - 1
+    train_y = target_nguyen5(train_x)
+    train_y[:] = 314.159
+    return train_x, train_y, train_x, train_y
+
+def get_benchmark_multivar(rand, n_degrees):
+    np.random.seed(int(rand.random()*100))
+    train_x = np.random.rand(100, n_degrees)
+    train_y = np.atleast_2d(np.sum(np.sin(train_x), 1)).transpose()
+    test_x = np.random.rand(100, n_degrees)
+    test_y = np.atleast_2d(np.sum(np.sin(train_x), 1)).transpose()
+    return train_x, train_y, test_x, test_y
+
+if __name__ == "__main__":
+    import random
+    print(get_benchmark_multivar(random.Random(), 10))

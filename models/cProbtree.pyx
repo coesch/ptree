@@ -586,28 +586,17 @@ cdef destroy_double_tree(FloatNode* self):
 
 
 cdef best_to_string(Node* self):
-
-    cdef double f_min = 1E120
     cdef unsigned int i_min = 0
-    cdef int i
-
-    if self.best < SNTERMINAL_IDX:
-        print('first %d' %self.best)
-        print(symbols)
-        return '(%s %c %s)' %   (best_to_string(self.nodes_left[self.best]), symbols[self.best],
-                                best_to_string(self.nodes_right[self.best]))
+    i_min = self.best
+    if i_min < SNTERMINAL_IDX:
+        return '(%s %c %s)' %   (best_to_string(self.nodes_left[i_min]), symbols[i_min],
+                                best_to_string(self.nodes_right[i_min]))
     elif i_min < TERMINAL_IDX:
-        print('second %d' %self.best)
-        print(symbols)
-        return '%c(%s)' % (symbols[self.best], best_to_string(self.nodes_left[self.best]))
+        return '%c(%s)' % (symbols[i_min], best_to_string(self.nodes_left[i_min]))
     elif i_min == SYM_CON:
-        print('third %d' %self.best)
-        print(symbols)
         return '%f' % get_double_result(self.cnode)
     else:
-        print('fourth %d' %self.best)
-        print(symbols)
-        return '%c' % symbols[self.best]
+        return '%s' % symbols[i_min]
 
 def start(seed, target_function, target_degree=0):
     train_x_np, train_y_np, test_x_np, test_y_np = target_function(random.Random(), target_degree)
