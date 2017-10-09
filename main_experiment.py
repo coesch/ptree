@@ -20,10 +20,10 @@ import time
 import numpy as np
 
 # Settings for benchmark Keijzer-6:
-num_experiments = 100                           # numbers of runs to perform
+num_experiments = 1                           # numbers of runs to perform
 symbols = {'dnt': ['+', '*'],                   # functions with arity 2
            'snt': ['s', 'c', 'l', 'r', 'i'],    # functions with arity 1
-           't': ['x', 'k']}                     # terminals
+           't': ['x0', 'k']}                     # terminals
 variables = ['x']
 magnitudes = [-6, -5, -4, -3, -2, -1]   # positions of floating point in a constant
 constant_symbols = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9'}  # symbols to concatenate an integer
@@ -42,7 +42,7 @@ settings = {'p_max': 4,                 # exponent for the power law
             'magnitudes': magnitudes,
             'num_train_cases': 49,      # number of training cases
             'num_test_cases': 119,      # number of testing cases
-            'num_iterations': 1000000}  # number of evaluations to perform
+            'num_iterations': 10000}  # number of evaluations to perform
 
 # create compile time definitions
 set(settings)
