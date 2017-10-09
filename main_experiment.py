@@ -42,7 +42,7 @@ settings = {'p_max': 4,                 # exponent for the power law
             'magnitudes': magnitudes,
             'num_train_cases': 49,      # number of training cases
             'num_test_cases': 119,      # number of testing cases
-            'num_iterations': 1000000}  # number of evaluations to perform
+            'num_iterations': 10000}  # number of evaluations to perform
 
 # create compile time definitions
 set(settings)
