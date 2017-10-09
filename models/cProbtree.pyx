@@ -51,7 +51,7 @@ cdef struct FloatNode:
 cdef create_node(Node *self, unsigned int depth):
     self.depth = depth
     self.num_evals = 0
-    self.current_choice = SYM_XXX
+    self.current_choice =  TERMINAL_IDX
 
     # first evaluation will choose a terminal
     cdef int k
@@ -160,34 +160,48 @@ cdef create_double_tree(FloatNode* self):
 cdef get_result(Node* self, const int num_cases, const double[][NUM_VARS] model_input, double[] result):
     cdef double temp1, temp2
     cdef unsigned int choice = self.current_choice
+    cdef unsigned int var_idx = 0
     if choice == SYM_ONE:
         for i in range(num_cases):
             result[i] = 1.0
         return
-    elif choice == SYM_UUU:
-        for i in range(num_cases):
-            result[i] = model_input[i][VAR_UUU]
-        return
-    elif choice == SYM_VVV:
-        for i in range(num_cases):
-            result[i] = model_input[i][VAR_VVV]
-        return
-    elif choice == SYM_WWW:
-        for i in range(num_cases):
-            result[i] = model_input[i][VAR_WWW]
-        return
-    elif choice == SYM_XXX:
-        for i in range(num_cases):
-            result[i] = model_input[i][VAR_XXX]
-        return
-    elif choice == SYM_YYY:
-        for i in range(num_cases):
-            result[i] = model_input[i][VAR_YYY]
-        return
-    elif choice == SYM_ZZZ:
-        for i in range(num_cases):
-            result[i] = model_input[i][VAR_ZZZ]
-        return
+    elif choice >= TERMINAL_IDX:
+        if choice == SYM_CON:
+            res1[0] = get_double_result(self.cnode)
+            for i in range(num_cases):
+                result[i] = res1[0]
+            return
+        else:
+            var_idx = choice-TERMINAL_IDX
+            for i in range(num_cases):
+                result[i] = model_input[i][var_idx]
+            return
+
+
+#    if choice == SYM_UUU:
+#        for i in range(num_cases):
+#            result[i] = model_input[i][VAR_UUU]
+#        return
+#    elif choice == SYM_VVV:
+#        for i in range(num_cases):
+#            result[i] = model_input[i][VAR_VVV]
+#        return
+#    elif choice == SYM_WWW:
+#        for i in range(num_cases):
+#            result[i] = model_input[i][VAR_WWW]
+#        return
+#    elif choice == SYM_XXX:
+#        for i in range(num_cases):
+#            result[i] = model_input[i][VAR_XXX]
+#        return
+#    elif choice == SYM_YYY:
+#        for i in range(num_cases):
+#            result[i] = model_input[i][VAR_YYY]
+#        return
+#    elif choice == SYM_ZZZ:
+#        for i in range(num_cases):
+#            result[i] = model_input[i][VAR_ZZZ]
+#        return
 
     cdef double res1[NUM_CASES]
     cdef double res2[NUM_CASES]
@@ -278,11 +292,7 @@ cdef get_result(Node* self, const int num_cases, const double[][NUM_VARS] model_
         for i in range(num_cases):
             result[i] = tanh(res1[i])
         return
-    elif choice == SYM_CON:
-        res1[0] = get_double_result(self.cnode)
-        for i in range(num_cases):
-            result[i] = res1[0]
-        return
+
     elif choice == SYM_INV:
         get_result(self.nodes_left[choice], num_cases, model_input, res1)
         for i in range(num_cases):
@@ -587,7 +597,8 @@ cdef best_to_string(Node* self):
     elif i_min == SYM_CON:
         return '%f' % get_double_result(self.cnode)
     else:
-        return '%c' % symbols[i_min]
+        return '%s' % symbols[i_min]
+
 
 def start(seed, target_function, target_degree=0):
     train_x_np, train_y_np, test_x_np, test_y_np = target_function(random.Random(), target_degree)

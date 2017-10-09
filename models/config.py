@@ -16,20 +16,67 @@ sym_def = {'+': 'SYM_PLS',
            'b': 'SYM_CUB',
            '1': 'SYM_ONE',
            'i': 'SYM_INV',
-           'u': 'SYM_UUU',
-           'v': 'SYM_VVV',
-           'w': 'SYM_WWW',
-           'x': 'SYM_XXX',
-           'y': 'SYM_YYY',
-           'z': 'SYM_ZZZ',
+           'u0': 'SYM_UU0',
+           'v0': 'SYM_VV0',
+           'w0': 'SYM_WW0',
+           'x0': 'SYM_XX0',
+           'y0': 'SYM_YY0',
+           'z0': 'SYM_ZZ0',
+           'u1': 'SYM_UU1',
+           'v1': 'SYM_VV1',
+           'w1': 'SYM_WW1',
+           'x1': 'SYM_XX1',
+           'y1': 'SYM_YY1',
+           'z1': 'SYM_ZZ1',
+           'u2': 'SYM_UU2',
+           'v2': 'SYM_VV2',
+           'w2': 'SYM_WW2',
+           'x2': 'SYM_XX2',
+           'y2': 'SYM_YY2',
+           'z2': 'SYM_ZZ2',
+           'u3': 'SYM_UU3',
+           'v3': 'SYM_VV3',
+           'w3': 'SYM_WW3',
+           'x3': 'SYM_XX3',
+           'y3': 'SYM_YY3',
+           'z3': 'SYM_ZZ3',
+           'u4': 'SYM_UU4',
+           'v4': 'SYM_VV4',
+           'w4': 'SYM_WW4',
+           'x4': 'SYM_XX4',
+           'y4': 'SYM_YY4',
+           'z4': 'SYM_ZZ4',
+           'u5': 'SYM_UU5',
+           'v5': 'SYM_VV5',
+           'w5': 'SYM_WW5',
+           'x5': 'SYM_XX5',
+           'y5': 'SYM_YY5',
+           'z5': 'SYM_ZZ5',
+           'u6': 'SYM_UU6',
+           'v6': 'SYM_VV6',
+           'w6': 'SYM_WW6',
+           'x6': 'SYM_XX6',
+           'y6': 'SYM_YY6',
+           'z6': 'SYM_ZZ6',
+           'u7': 'SYM_UU7',
+           'v7': 'SYM_VV7',
+           'w7': 'SYM_WW7',
+           'x7': 'SYM_XX7',
+           'y7': 'SYM_YY7',
+           'z7': 'SYM_ZZ7',
+           'u8': 'SYM_UU8',
+           'v8': 'SYM_VV8',
+           'w8': 'SYM_WW8',
+           'x8': 'SYM_XX8',
+           'y8': 'SYM_YY8',
+           'z8': 'SYM_ZZ8',
+           'u9': 'SYM_UU9',
+           'v9': 'SYM_VV9',
+           'w9': 'SYM_WW9',
+           'x9': 'SYM_XX9',
+           'y9': 'SYM_YY9',
+           'z9': 'SYM_ZZ9',
            'k': 'SYM_CON'}
-
-var_def = {'u': 'VAR_UUU',
-           'v': 'VAR_VVV',
-           'w': 'VAR_WWW',
-           'x': 'VAR_XXX',
-           'y': 'VAR_YYY',
-           'z': 'VAR_ZZZ'}
 
 con_def = {'0': 'CON_0',
            '1': 'CON_1',
@@ -86,21 +133,14 @@ def set(settings):
             else:
                 fd.write('DEF %s = %i \n' % (sym_def[s], -1))
         idx = 0
-        for s in var_def:
-            if s in settings['variables']:
-                fd.write('DEF %s = %i \n' % (var_def[s], idx))
-                idx += 1
-            else:
-                fd.write('DEF %s = %i \n' % (var_def[s], -1))
-        idx = 0
         for s in con_def:
             if s in settings['constant_symbols']:
                 fd.write('DEF %s = %i \n' % (con_def[s], idx))
                 idx += 1
             else:
                 fd.write('DEF %s = %i \n' % (con_def[s], -1))
-        fd.write('cdef char symbols[%i] \n' % num_symbols)
-        fd.write('symbols[:] = %s \n' % str(ordered_symbols))
+        #fd.write('cdef bytes symbols[%i] \n' % num_symbols)
+        fd.write('symbols = %s \n' % str(ordered_symbols))
         fd.write('cdef char magnitudes[%i] \n' % len(settings['magnitudes']))
         fd.write('magnitudes[:] = %s \n' % str(settings['magnitudes']))
         fd.write('cdef double base_probs[%i] \n' % num_symbols)
