@@ -53,6 +53,7 @@ settings = {'problem': sr.get_benchmark_multivar,
             'num_test_cases': 100,      # number of testing cases
             'num_iterations': 1000000}  # number of evaluations to perform
 
+
 # create compile time definitions
 set(settings)
 

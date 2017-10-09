@@ -1,3 +1,4 @@
+# cython: profile=False
 import random
 import numpy as np
 
@@ -597,6 +598,7 @@ cdef best_to_string(Node* self):
         return '%f' % get_double_result(self.cnode)
     else:
         return '%s' % symbols[i_min]
+
 
 def start(seed, target_function, target_degree=0):
     train_x_np, train_y_np, test_x_np, test_y_np = target_function(random.Random(), target_degree)
