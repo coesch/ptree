@@ -616,7 +616,10 @@ def start(seed, train_x_np, train_y_np, test_x_np, test_y_np):
         # create batch:
         # we don't care for repeated entries for now
         for j in range(len(train_batch_y)):
-            idx = <int>(random.random()*NUM_TRAIN_CASES)
+            if NUM_TRAIN_CASES != NUM_BATCH_CASES:
+                idx = <int>(random.random()*NUM_TRAIN_CASES)
+            else:
+                idx = j
             train_batch_x[j] = train_x[idx]
             train_batch_y[j] = train_y[idx]
             sum += train_batch_y[j]
