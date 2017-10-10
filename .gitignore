@@ -43,3 +43,4 @@ coverage.xml
 
 # compile time
 config.pxi
+cifs*
