@@ -14,13 +14,14 @@ from models.config import set
 from joblib import Parallel, delayed
 import multiprocessing
 import benchmarks.symreg as sr
-import matplotlib.pyplot as plt
+import random
 import pyximport
 import time
-import numpy as np
 
 # Settings for benchmark Multivar:
-num_experiments = 100                           # numbers of runs to perform
+# problem definition
+train_x, train_y, test_x, test_y = sr.get_benchmark_multivar(random.Random(), 40)
+# symbol definition
 symbols = {'dnt': ['+', '*'],                   # functions with arity 2
            'snt': ['s', 'c', 'l', 'r', 'i'],    # functions with arity 1
            't': ['k']}                     # terminals (that are not variables)
@@ -34,7 +35,9 @@ variables = ['u0', 'v0', 'w0', 'x0', 'y0', 'z0',
 magnitudes = [-6, -5, -4, -3, -2, -1]   # positions of floating point in a constant
 constant_symbols = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9'}  # symbols to concatenate an integer
 symbols['t'].extend(variables)
-settings = {'problem': sr.get_benchmark_multivar,
+
+# general settings
+settings = {'num_experiments': 10,      # numbers of runs to perform
             'problem_degree': 40,       # difficulty degree of problem, if applicable
             'p_max': 4,                 # exponent for the power law
             'p_min': 1.001,             # branch depth discounting factor
@@ -50,9 +53,9 @@ settings = {'problem': sr.get_benchmark_multivar,
             'variables': variables,
             'magnitudes': magnitudes,
             'num_train_cases': 100,      # number of training cases
-            'num_test_cases': 100,      # number of testing cases
-            'num_iterations': 1000000}  # number of evaluations to perform
-
+            'num_test_cases': 100,       # number of testing cases
+            'num_iterations': 1000000,   # number of evaluations to perform
+            'batch_size': 1}             # batch size (fraction of full)
 
 # create compile time definitions
 set(settings)
@@ -64,7 +67,7 @@ from models.cProbtree import start
 num_cores = multiprocessing.cpu_count() - 1  # how many cores to use for the runs
 t = time.time()
 # results contains the end-of-training, the test errors as well as the error evolution for every 5000th evaluation
-results = Parallel(n_jobs=num_cores)(delayed(start)(k, settings['problem'], settings['problem_degree'])
-                                         for k in range(num_experiments))
+results = Parallel(n_jobs=num_cores)(delayed(start)(k, train_x, train_y, test_x, test_y)
+                                         for k in range(settings['num_experiments']))
 elapsed = time.time()-t
 print('Took %f seconds' % (elapsed))

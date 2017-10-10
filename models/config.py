@@ -122,6 +122,7 @@ def set(settings):
         fd.write('DEF NUM_TEST_CASES = %i \n' % (settings['num_test_cases']))
         fd.write('DEF NUM_CASES = %i \n' % (max(settings['num_train_cases'], settings['num_test_cases'])))
         fd.write('DEF NUM_VARS = %i \n' % (len(settings['variables'])))
+        fd.write('DEF NUM_BATCH_CASES = %i \n' % (int(settings['batch_size'])*settings['num_train_cases']))
 
         idx = 0
         ordered_symbols = []

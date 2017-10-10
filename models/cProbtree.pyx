@@ -158,6 +158,7 @@ cdef create_double_tree(FloatNode* self):
     create_const_tree(self.nodes[choice]) # do not allow any further periods
 
 cdef get_result(Node* self, const int num_cases, const double[][NUM_VARS] model_input, double[] result):
+    cdef double res1[NUM_CASES]
     cdef double temp1, temp2
     cdef unsigned int choice = self.current_choice
     cdef unsigned int var_idx = 0
@@ -177,33 +178,6 @@ cdef get_result(Node* self, const int num_cases, const double[][NUM_VARS] model_
                 result[i] = model_input[i][var_idx]
             return
 
-
-#    if choice == SYM_UUU:
-#        for i in range(num_cases):
-#            result[i] = model_input[i][VAR_UUU]
-#        return
-#    elif choice == SYM_VVV:
-#        for i in range(num_cases):
-#            result[i] = model_input[i][VAR_VVV]
-#        return
-#    elif choice == SYM_WWW:
-#        for i in range(num_cases):
-#            result[i] = model_input[i][VAR_WWW]
-#        return
-#    elif choice == SYM_XXX:
-#        for i in range(num_cases):
-#            result[i] = model_input[i][VAR_XXX]
-#        return
-#    elif choice == SYM_YYY:
-#        for i in range(num_cases):
-#            result[i] = model_input[i][VAR_YYY]
-#        return
-#    elif choice == SYM_ZZZ:
-#        for i in range(num_cases):
-#            result[i] = model_input[i][VAR_ZZZ]
-#        return
-
-    cdef double res1[NUM_CASES]
     cdef double res2[NUM_CASES]
     if choice == SYM_PLS:
         get_result(self.nodes_left[choice], num_cases, model_input, res1)
@@ -600,12 +574,14 @@ cdef best_to_string(Node* self):
         return '%s' % symbols[i_min]
 
 
-def start(seed, target_function, target_degree=0):
-    train_x_np, train_y_np, test_x_np, test_y_np = target_function(random.Random(), target_degree)
+def start(seed, train_x_np, train_y_np, test_x_np, test_y_np):
     cdef Node n
     cdef double train_x[NUM_TRAIN_CASES][NUM_VARS]
+    cdef double train_batch_x[NUM_BATCH_CASES][NUM_VARS]
     cdef double train_result[NUM_TRAIN_CASES]
+    cdef double train_batch_result[NUM_BATCH_CASES]
     cdef double train_y[NUM_TRAIN_CASES]
+    cdef double train_batch_y[NUM_BATCH_CASES]
     cdef double test_x[NUM_TEST_CASES][NUM_VARS]
     cdef double test_result[NUM_TEST_CASES]
     cdef double test_y[NUM_TEST_CASES]
@@ -624,47 +600,62 @@ def start(seed, target_function, target_degree=0):
     cdef double min_fitness = 1E120
     cdef double min_squared_error = 1E120
     cdef double error, squared_error, fitness
-    cdef int hit
     cdef int depth
     cdef double last_pre_fitness = 1E120
+    cdef double sum, average, var
 
     create_node(&n, 0)
     for i in range(NUM_ITER):
         error = 0
+        sum = 0
+        var = 0
         squared_error = 0
         fitness = 0
         hit = 0
         create_tree(&n)
+        # create batch:
+        # we don't care for repeated entries for now
+        for j in range(len(train_batch_y)):
+            if NUM_TRAIN_CASES != NUM_BATCH_CASES:
+                idx = <int>(random.random()*NUM_TRAIN_CASES)
+            else:
+                idx = j
+            train_batch_x[j] = train_x[idx]
+            train_batch_y[j] = train_y[idx]
+            sum += train_batch_y[j]
 
-        get_result(&n, NUM_TRAIN_CASES, train_x, train_result)
-        for j in range(NUM_TRAIN_CASES):
-            error = fabs(train_result[j]-train_y[j])
-            squared_error += (train_result[j]-train_y[j])**2
-            fitness += error
-            if error < 0.01:
-                hit += 1
-        fitness = squared_error
+        average = sum/<float>NUM_BATCH_CASES
+        get_result(&n, NUM_BATCH_CASES, train_batch_x, train_batch_result)
+
+        # calculate errors
+        for j in range(NUM_BATCH_CASES):
+            error = fabs(train_batch_result[j]-train_batch_y[j])
+            squared_error += (error)**2
+            var += pow(train_batch_y[j] - average, 2)
+
+        # determine fitness
+        squared_error = squared_error/<float>NUM_BATCH_CASES
+        fitness = squared_error/sqrt(var/<float>NUM_BATCH_CASES)
         propagate_fitness(&n, fitness)
+
         if i % PRUNE_STEP == 0 and i > 0:
             prune(&n, 0)
         if fitness < min_fitness:
             min_fitness = fitness
             set_best(&n)
-        if squared_error < min_squared_error:
-            min_squared_error = squared_error
         if i%5000 == 0:
-            fitness_evolution.append(min_squared_error/<double>NUM_TRAIN_CASES)
+            fitness_evolution.append(fitness)
         if i % 50000 == 0 and i>0:
-            print('%i Evaluation %i: MSE: %E' %(seed, i, min_fitness/<double>NUM_TRAIN_CASES))
+            print('%i Evaluation %i: Best batch fitness %f' %(seed, i, min_fitness))
 
     set_current_to_best(&n)
-    get_result(&n, NUM_TEST_CASES, test_x, test_result)
-    squared_error = 0
-    for j in range(NUM_TEST_CASES):
-        squared_error += (test_result[j]-test_y[j])**2
+    get_result(&n, NUM_TRAIN_CASES, train_x, train_result)
+    fit_train = np.mean(np.subtract(train_y, train_result)**2)/np.sqrt(np.var(train_y))
 
-    print('%i Done. Evaluation %i: Train: %f Test: %f' %(seed, i, min_fitness/<double>NUM_TRAIN_CASES,
-        squared_error/<double>NUM_TEST_CASES))
+    get_result(&n, NUM_TEST_CASES, test_x, test_result)
+    fit_test = np.mean(np.subtract(test_y, test_result)**2)/np.sqrt(np.var(test_y))
+
+    print('%i Done. Evaluation %i: Train: %f Test: %f' %(seed, i, fit_train, fit_test))
     print(best_to_string(&n))
     destroy_tree(&n, 1)
-    return min_fitness/<double>NUM_TRAIN_CASES, squared_error/<double>NUM_TEST_CASES, fitness_evolution
+    return fit_train, fit_test, fitness_evolution
